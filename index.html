@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aspik SatLink</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .footer-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .satellite-container {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .satellite {
+            position: relative;
+            width: 16px;
+            height: 12px;
+            animation: orbit 8s linear infinite;
+        }
+
+        .satellite-body {
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(45deg, #666666 0%, #999999 100%);
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 5px;
+            box-shadow: 0 0 2px rgba(76, 175, 80, 0.3);
+        }
+
+        .satellite-dish {
+            width: 4px;
+            height: 3px;
+            background: linear-gradient(45deg, #4CAF50 0%, #66BB6A 100%);
+            border-radius: 50% 50% 50% 50% / 100% 100% 50% 50%;
+            position: absolute;
+            top: 0;
+            left: 6px;
+        }
+
+        .satellite-antenna {
+            width: 10px;
+            height: 1px;
+            background: #4CAF50;
+            position: absolute;
+            top: 5px;
+            left: 3px;
+            transform-origin: left center;
+            animation: signal 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg) translateX(6px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(6px) rotate(-360deg); }
+        }
+
+        @keyframes signal {
+            0% { opacity: 0.3; transform: scaleX(0.8); }
+            100% { opacity: 1; transform: scaleX(1.2); }
+        }
+
+        .footer-title {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            margin: 0;
+            flex: 0 0 auto;
+        }
+
+        .title-label {
+            color: #aaaaaa;
+            font-weight: 500;
+        }
+
+        .title-version {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+            color: #cccccc;
+            border: 1px solid #555555;
+            padding: 0.225rem 0.45rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-width: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .nav-btn {
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+            border-color: #666666;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+            opacity: 0.8;
+        }
+
+        .nav-btn:hover::before {
+            opacity: 1;
+        }
+
+        .nav-btn.active {
+            opacity: 1;
+            background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+            border-color: #555555;
+            color: #cccccc;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .nav-btn.active::before {
+            opacity: 0;
+        }
+
+        .map-container {
+            height: 100vh; /* Full viewport height since footer is fixed */
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none;
+        }
+
+        iframe.active {
+            display: block;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background-color: #1a1a1a;
+            color: #4CAF50;
+            font-size: 1.2rem;
+        }
+
+        .bottom-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+            padding: 0.75rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-buttons {
+            flex: 1;
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .status-right {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+        }
+
+        .status-label {
+            color: #aaaaaa;
+            font-weight: 500;
+        }
+
+        .status-item span:last-child {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-status-bar {
+                padding: 0.6rem 0.75rem;
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: stretch;
+            }
+
+            .footer-left {
+                flex-direction: column;
+                gap: 0.25rem;
+                align-items: center;
+            }
+
+            .footer-title {
+                justify-content: center;
+                padding-right: 0;
+                padding-bottom: 0.25rem;
+            }
+
+            .nav-buttons {
+                gap: 0.5rem;
+                justify-content: center;
+            }
+
+            .status-right {
+                justify-content: center;
+            }
+
+            .nav-btn {
+                flex: 1;
+                min-width: 40px;
+                padding: 0.195rem 0.4rem;
+                font-size: 0.45rem;
+                background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+                border-color: #555555;
+                color: #cccccc;
+                opacity: 0.6;
+            }
+
+            .nav-btn:hover {
+                background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+                border-color: #666666;
+                color: #ffffff;
+                opacity: 0.8;
+            }
+
+            .nav-btn.active {
+                opacity: 1;
+            }
+
+            .status-item {
+                justify-content: center;
+                font-size: 0.65rem;
+                gap: 0.3rem;
+            }
+
+            .status-label {
+                color: #aaaaaa;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="map-container">
+        <iframe id="overworld" src="overworld/index.html" class="active"></iframe>
+        <iframe id="nether" src="nether/index.html"></iframe>
+        <iframe id="end" src="end/index.html"></iframe>
+    </div>
+
+    <div class="bottom-status-bar">
+        <div class="footer-left">
+            <div class="footer-title">
+                <span class="title-label">Aspik SatLink</span>
+                <span class="title-version">0.8 beta</span>
+            </div>
+            <div class="satellite-container">
+                <div class="satellite">
+                    <div class="satellite-body"></div>
+                    <div class="satellite-dish"></div>
+                    <div class="satellite-antenna"></div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="switchMap('overworld')">🌍 Overworld</button>
+            <button class="nav-btn" onclick="switchMap('nether')">🔥 Nether</button>
+            <button class="nav-btn" onclick="switchMap('end')">🌌 The End</button>
+        </div>
+        <div class="status-right">
+            <div class="status-item">
+                <span class="status-label">Last Updated:</span>
+                <span id="lastUpdated">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration - Change this date when you update the maps
+        const MAP_LAST_UPDATED = "2025-11-12 15:00:00";
+
+        // Function to calculate relative time
+        function getRelativeTime(dateString) {
+            const now = new Date();
+            const updated = new Date(dateString);
+            const diffMs = now - updated;
+            const diffSeconds = Math.floor(diffMs / 1000);
+            const diffMinutes = Math.floor(diffSeconds / 60);
+            const diffHours = Math.floor(diffMinutes / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffSeconds < 60) return 'just now';
+            if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+
+            // For older dates, show the actual date
+            return updated.toLocaleDateString();
+        }
+
+        // Initialize last updated display with relative time only
+        document.addEventListener('DOMContentLoaded', function() {
+            const relativeTime = getRelativeTime(MAP_LAST_UPDATED);
+            document.getElementById('lastUpdated').textContent = relativeTime;
+        });
+
+        function switchMap(mapName) {
+            // Hide all iframes
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => iframe.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // Show selected map
+            document.getElementById(mapName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+        }
+
+        // Add loading indicators
+        document.querySelectorAll('iframe').forEach(iframe => {
+            iframe.addEventListener('load', function() {
+                // Could add additional loading logic here if needed
+            });
+        });
+    </script>
+</body>
+</html>
