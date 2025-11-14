@@ -9,7 +9,7 @@ var UnminedMapProperties = {
     maxRegionX: 4,
     maxRegionZ: 3,
     worldName: "AspikAmStielPlus 10.11.2025 22:54:34 – Kopie",
-    background: "#1a1a1a",
+    background: "#1a1a1a ",
     markers: new Array(),
     enableGrid: true,
     showGrid: true,
