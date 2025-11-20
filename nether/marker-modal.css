@@ -218,3 +218,128 @@
     padding: 0.5rem;
 }
 
+/* Custom Dropdown Styles */
+.marker-modal-custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.marker-modal-dropdown-trigger {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    color: #cccccc;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.2s ease;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.marker-modal-dropdown-trigger:hover {
+    border-color: #666666;
+}
+
+.marker-modal-custom-dropdown.open .marker-modal-dropdown-trigger {
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+    color: #ffffff;
+}
+
+.marker-modal-dropdown-selected {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.marker-modal-dropdown-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.marker-modal-dropdown-arrow {
+    font-size: 0.7rem;
+    color: #cccccc;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.marker-modal-custom-dropdown.open .marker-modal-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.marker-modal-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    border: 1px solid #555555;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.marker-modal-custom-dropdown.open .marker-modal-dropdown-list {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.marker-modal-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    color: #cccccc;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-bottom: 1px solid rgba(85, 85, 85, 0.3);
+}
+
+.marker-modal-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.marker-modal-dropdown-item:hover {
+    background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+    color: #ffffff;
+}
+
+.marker-modal-dropdown-item.selected {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: #ffffff;
+}
+
+.marker-modal-dropdown-item.selected:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+}
+
+.marker-modal-dropdown-image {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+}
+

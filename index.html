@@ -324,6 +324,7 @@
             <button class="nav-btn active" onclick="switchMap('overworld')">🌍 Overworld</button>
             <button class="nav-btn" onclick="switchMap('nether')">🔥 Nether</button>
             <button class="nav-btn" onclick="switchMap('end')">🌌 The End</button>
+            <button class="nav-btn" id="filter-btn" onclick="openFilter()">🔍 Filter</button>
         </div>
         <div class="status-right">
             <div class="status-item">
@@ -377,6 +378,15 @@
             // Add active class to clicked button
             event.target.classList.add('active');
 
+        }
+
+        function openFilter() {
+            // Find the active iframe
+            const activeIframe = document.querySelector('iframe.active');
+            if (activeIframe && activeIframe.contentWindow) {
+                // Send message to iframe to open filter
+                activeIframe.contentWindow.postMessage({ type: 'openFilter' }, '*');
+            }
         }
 
         // Add loading indicators

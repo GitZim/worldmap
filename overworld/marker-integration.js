@@ -3,6 +3,7 @@
     const dimension = 'overworld';
     let markerAPI = null;
     let markerModal = null;
+    let markerFilter = null;
     let userMarkersLayer = null;
     let userMarkers = [];
     let unminedInstance = null;
@@ -13,6 +14,7 @@
         unminedInstance = unmined;
         markerAPI = new MarkerAPI();
         markerModal = new MarkerModal();
+        markerFilter = new MarkerFilter(dimension);
 
         // Set up modal save callback
         markerModal.setOnSave(async (markerData, isEdit) => {
@@ -33,6 +35,14 @@
             }
         });
 
+        // Set up filter apply callback
+        markerFilter.setOnApply((filterState) => {
+            updateUserMarkersLayer();
+        });
+
+        // Create filter button
+        createFilterButton();
+
         // Extend context menu
         extendContextMenu(unmined);
 
@@ -40,13 +50,22 @@
         loadAndDisplayUserMarkers();
     }
 
+    function createFilterButton() {
+        // Listen for messages from parent window to open filter
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'openFilter') {
+                markerFilter.open();
+            }
+        });
+    }
+
     // Function to find marker at given coordinates
-    function findMarkerAtCoordinates(x, z, tolerance = 10) {
+    function findMarkerAtCoordinates(x, z, tolerance = 30) {
         for (let i = 0; i < userMarkers.length; i++) {
             const marker = userMarkers[i];
             const dx = Math.abs(marker.x - x);
             const dz = Math.abs(marker.z - z);
-            // Check if coordinates are within tolerance (default 10 blocks)
+            // Check if coordinates are within tolerance (default 30 blocks)
             if (dx <= tolerance && dz <= tolerance) {
                 return marker;
             }
@@ -95,11 +114,16 @@
                 menuItems.forEach(item => {
                     if (item.textContent.includes('Add Custom Marker') || 
                         item.textContent.includes('Delete Marker') ||
+                        item.textContent.includes('Mark as completed') ||
+                        item.textContent.includes('Mark as incomplete') ||
+                        item.textContent.includes('Toggle Completed') ||
                         item.classList.contains('ol-ctx-menu-separator')) {
                         // Check if it's our separator (one before our items)
                         const prevSibling = item.previousElementSibling;
                         if (prevSibling && (prevSibling.textContent.includes('Add Custom Marker') || 
-                            prevSibling.textContent.includes('Delete Marker'))) {
+                            prevSibling.textContent.includes('Delete Marker') ||
+                            prevSibling.textContent.includes('Mark as completed') ||
+                            prevSibling.textContent.includes('Mark as incomplete'))) {
                             // This is our separator, remove it too
                         }
                         item.remove();
@@ -140,13 +164,44 @@
                     );
                 }
 
-                // If marker exists at location, add delete option
+                // If marker exists at location, add toggle and delete options
                 if (markerAtLocation) {
                     // Add separator
                     const separator = document.createElement('li');
                     separator.className = 'ol-ctx-menu-separator';
                     separator.innerHTML = '<hr>';
                     addMenuItem.parentNode.insertBefore(separator, addMenuItem.nextSibling);
+
+                    // Create "Toggle Completed" / "Mark as completed" menu item
+                    const isChecked = markerAtLocation.checked === true;
+                    const toggleMenuItem = document.createElement('li');
+                    toggleMenuItem.textContent = isChecked ? 'Mark as incomplete' : 'Mark as completed';
+                    toggleMenuItem.style.cursor = 'pointer';
+                    toggleMenuItem.style.color = isChecked ? '#ff9800' : '#4caf50';
+                    toggleMenuItem.addEventListener('mouseenter', () => {
+                        toggleMenuItem.style.backgroundColor = '#333';
+                    });
+                    toggleMenuItem.addEventListener('mouseleave', () => {
+                        toggleMenuItem.style.backgroundColor = '';
+                    });
+                    toggleMenuItem.addEventListener('click', async () => {
+                        try {
+                            const updatedMarkerData = {
+                                ...markerAtLocation,
+                                checked: !isChecked
+                            };
+                            await markerAPI.updateMarker(dimension, markerAtLocation.id, updatedMarkerData);
+                            Unmined.toast(isChecked ? 'Marker marked as incomplete' : 'Marker marked as completed');
+                            await loadAndDisplayUserMarkers();
+                        } catch (error) {
+                            console.error('Error toggling marker completion:', error);
+                            Unmined.toast('Failed to update marker. Please try again.');
+                        }
+                        // Hide the context menu
+                        if (contextMenuControl.container) {
+                            contextMenuControl.container.classList.add('ol-ctx-menu-hidden');
+                        }
+                    });
 
                     // Create "Delete Marker" menu item
                     const deleteMenuItem = document.createElement('li');
@@ -177,8 +232,9 @@
                         }
                     });
 
-                    // Insert after separator
-                    separator.parentNode.insertBefore(deleteMenuItem, separator.nextSibling);
+                    // Insert toggle after separator, then delete after toggle
+                    separator.parentNode.insertBefore(toggleMenuItem, separator.nextSibling);
+                    toggleMenuItem.parentNode.insertBefore(deleteMenuItem, toggleMenuItem.nextSibling);
                 }
             }, 10);
         });
@@ -208,9 +264,24 @@
             unminedInstance.olMap.removeLayer(userMarkersLayer);
         }
 
-        // Create new layer with user markers
-        if (userMarkers.length > 0) {
-            userMarkersLayer = unminedInstance.createMarkersLayer(userMarkers);
+        // Filter markers based on filter state
+        const filterState = markerFilter ? markerFilter.getFilterState() : null;
+        let filteredMarkers = userMarkers;
+
+        if (filterState) {
+            filteredMarkers = userMarkers.filter(marker => {
+                // If marker has a category, check if that category is visible
+                if (marker.category) {
+                    return filterState[marker.category] === true;
+                }
+                // If marker has no category, show it if "other" category is visible
+                return filterState['other'] === true;
+            });
+        }
+
+        // Create new layer with filtered markers
+        if (filteredMarkers.length > 0) {
+            userMarkersLayer = unminedInstance.createMarkersLayer(filteredMarkers, unminedInstance.olMap);
             unminedInstance.olMap.addLayer(userMarkersLayer);
 
             // Add click handlers for edit/delete
@@ -273,6 +344,37 @@
             document.body.removeChild(menu);
         });
 
+        const toggleBtn = document.createElement('button');
+        const isChecked = markerData.checked === true;
+        toggleBtn.textContent = isChecked ? 'Mark as incomplete' : 'Mark as completed';
+        toggleBtn.style.cssText = `
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, ${isChecked ? '#ff9800' : '#4caf50'} 0%, ${isChecked ? '#f57c00' : '#388e3c'} 100%);
+            border: 1px solid ${isChecked ? '#ff9800' : '#4caf50'};
+            border-radius: 3px;
+            color: #ffffff;
+            cursor: pointer;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        `;
+        toggleBtn.addEventListener('click', async () => {
+            try {
+                const updatedMarkerData = {
+                    ...markerData,
+                    checked: !isChecked
+                };
+                await markerAPI.updateMarker(dimension, markerData.id, updatedMarkerData);
+                Unmined.toast(isChecked ? 'Marker marked as incomplete' : 'Marker marked as completed');
+                await loadAndDisplayUserMarkers();
+            } catch (error) {
+                console.error('Error toggling marker completion:', error);
+                Unmined.toast('Failed to update marker');
+            }
+            document.body.removeChild(menu);
+        });
+
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.style.cssText = `
@@ -301,6 +403,7 @@
         });
 
         menu.appendChild(editBtn);
+        menu.appendChild(toggleBtn);
         menu.appendChild(deleteBtn);
 
         const pixel = unminedInstance.olMap.getPixelFromCoordinate(coordinate);
@@ -323,8 +426,8 @@
 
     // Store marker data in features for easy access
     const originalCreateMarkersLayer = Unmined.prototype.createMarkersLayer;
-    Unmined.prototype.createMarkersLayer = function(markers) {
-        const layer = originalCreateMarkersLayer.call(this, markers);
+    Unmined.prototype.createMarkersLayer = function(markers, map) {
+        const layer = originalCreateMarkersLayer.call(this, markers, map);
         
         // Store marker data in features
         layer.getSource().forEachFeature((feature, index) => {

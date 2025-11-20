@@ -305,12 +305,12 @@ class Unmined {
         });
 
         if (this.#options.markers && this.#options.markers.length > 0) {
-            this.markersLayer = this.createMarkersLayer(this.#options.markers);
+            this.markersLayer = this.createMarkersLayer(this.#options.markers, map);
             map.addLayer(this.markersLayer);
         }
 
         if (this.#options.playerMarkers && this.#options.playerMarkers.length > 0) {
-            this.playerMarkersLayer = this.createMarkersLayer(this.#options.playerMarkers);
+            this.playerMarkersLayer = this.createMarkersLayer(this.#options.playerMarkers, map);
             map.addLayer(this.playerMarkersLayer);
         }
 
@@ -348,22 +348,38 @@ class Unmined {
         this.redDotMarker.setCoordinates(coordinates);
     }
 
-    createMarkersLayer(markers) {
-        // Category definitions for emoji icons
+    createMarkersLayer(markers, map) {
+        // Category definitions for image icons
         const categories = {
-            'base': '🏠',
-            'pvp': '⚔️',
-            'structure': '🏛️',
-            'resource': '💎',
-            'danger': '⚠️',
-            'portal': '🌀',
-            'farm': '🌾',
-            'spawn': '📍',
-            'shop': '🏪',
-            'other': '📌'
+            'base': 'categoryimages/house.png',
+            'ressources': 'categoryimages/pickaxe.png',
+            'village': 'categoryimages/village.png',
+            'spawner': 'categoryimages/zombie.png',
+            'portal': 'categoryimages/portal.png',
+            'mineshaft': 'categoryimages/mineshaft.png',
+            'ancientcity': 'categoryimages/ancientcity.png',
+            'deserttemple': 'categoryimages/deserttemple.png',
+            'igloo': 'categoryimages/igloo.png',
+            'mansion': 'categoryimages/mansion.png',
+            'junglepyramid': 'categoryimages/junglepyramid.png',
+            'oceantemple': 'categoryimages/oceantemple.png',
+            'trialchamber': 'categoryimages/trialchamber.png',
+            'pillager': 'categoryimages/pillager.png',
+            'other': 'categoryimages/pin.png'
         };
 
+        // Helper function to calculate image scale for 32x32 pixel display
+        // Source images are 320x320 pixels, so scale = 32/320 = 0.1
+        // This ensures uniform 32x32 pixel display
+        function getImageScale(imagePath) {
+            // If marker already has imageScale, use it (for backward compatibility)
+            // Otherwise calculate for 32x32 display from 320x320 source images
+            // scale = targetSize / sourceSize = 32 / 320 = 0.1
+            return 0.1;
+        }
+
         var features = [];
+        var hoveredFeature = null;
 
         for (var i = 0; i < markers.length; i++) {
             var item = markers[i];
@@ -374,65 +390,103 @@ class Unmined {
                 geometry: new ol.geom.Point(ol.proj.transform([longitude, latitude], this.dataProjection, this.viewProjection))
             });
 
-            var styles = [];
+            // Store icon style configuration
+            var iconStyle = null;
+            var textStyleConfig = null;
 
-            // If category exists, use emoji as icon; otherwise use pin image
+            // If category exists, use category image; otherwise use pin image
+            var iconOpacity = 1.0;
             if (item.category && categories[item.category]) {
-                // Use emoji as icon with Text style
-                var emojiStyle = new ol.style.Style({
-                    text: new ol.style.Text({
-                        text: categories[item.category],
-                        font: '32px sans-serif',
-                        offsetY: 0,
-                        textAlign: 'center',
-                        textBaseline: 'bottom',
-                        fill: new ol.style.Fill({
-                            color: '#ffffff'
-                        })
+                // Use category image as icon with Icon style
+                var categoryImagePath = categories[item.category];
+                var imageScale = item.imageScale !== undefined ? item.imageScale : getImageScale(categoryImagePath);
+                // Reduce opacity if marker is checked
+                iconOpacity = item.checked === true ? 0.5 : 1.0;
+                iconStyle = new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: categoryImagePath,
+                        anchor: item.imageAnchor || [0.5, 1],
+                        scale: imageScale,
+                        opacity: iconOpacity
                     })
                 });
-                styles.push(emojiStyle);
             } else if (item.image) {
                 // Use pin image for markers without category
-                var iconStyle = new ol.style.Style({
+                // Reduce opacity if marker is checked
+                iconOpacity = item.checked === true ? 0.5 : 1.0;
+                iconStyle = new ol.style.Style({
                     image: new ol.style.Icon({
                         src: item.image,
                         anchor: item.imageAnchor,
-                        scale: item.imageScale
+                        scale: item.imageScale,
+                        opacity: iconOpacity
                     })
                 });
-                styles.push(iconStyle);
             }
 
-            // Add text label (positioned below icon)
+            // Store text style configuration (but don't add to default styles)
             if (item.text) {
-                var textStyle = new ol.style.Style({
-                    text: new ol.style.Text({
-                        text: item.text,
-                        font: item.font,
-                        offsetX: item.offsetX,
-                        offsetY: item.category ? 35 : item.offsetY, // Position below emoji icon if category exists
-                        fill: item.textColor ? new ol.style.Fill({
-                            color: item.textColor
-                        }) : null,
-                        padding: item.textPadding ?? [2, 4, 2, 4],
-                        stroke: item.textStrokeColor ? new ol.style.Stroke({
-                            color: item.textStrokeColor,
-                            width: item.textStrokeWidth
-                        }) : null,
-                        backgroundFill: item.textBackgroundColor ? new ol.style.Fill({
-                            color: item.textBackgroundColor
-                        }) : null,
-                        backgroundStroke: item.textBackgroundStrokeColor ? new ol.style.Stroke({
-                            color: item.textBackgroundStrokeColor,
-                            width: item.textBackgroundStrokeWidth
-                        }) : null,
-                    })
-                });
-                styles.push(textStyle);
+                textStyleConfig = {
+                    text: item.text,
+                    font: item.font,
+                    offsetX: item.offsetX,
+                    offsetY: item.category ? 20 : (item.offsetY || 10), // Position below icon if category exists
+                    fill: item.textColor ? new ol.style.Fill({
+                        color: item.textColor
+                    }) : null,
+                    padding: item.textPadding ?? [2, 4, 2, 4],
+                    stroke: item.textStrokeColor ? new ol.style.Stroke({
+                        color: item.textStrokeColor,
+                        width: item.textStrokeWidth
+                    }) : null,
+                    backgroundFill: item.textBackgroundColor ? new ol.style.Fill({
+                        color: item.textBackgroundColor
+                    }) : null,
+                    backgroundStroke: item.textBackgroundStrokeColor ? new ol.style.Stroke({
+                        color: item.textBackgroundStrokeColor,
+                        width: item.textBackgroundStrokeWidth
+                    }) : null,
+                };
             }
 
-            feature.setStyle(styles);
+            // Store text style config and icon style on feature
+            feature.set('iconStyle', iconStyle);
+            feature.set('textStyleConfig', textStyleConfig);
+            feature.set('hovered', false);
+            feature.set('isChecked', item.checked === true);
+
+            // Use style function to dynamically show/hide text based on hover state
+            feature.setStyle((feature, resolution) => {
+                var styles = [];
+                var icon = feature.get('iconStyle');
+                if (icon) {
+                    styles.push(icon);
+                }
+                
+                // Add check overlay icon if marker is checked
+                if (feature.get('isChecked')) {
+                    var checkIconStyle = new ol.style.Style({
+                        image: new ol.style.Icon({
+                            src: 'categoryimages/check.png',
+                            anchor: [1, 1], // Bottom-right corner
+                            scale: 0.06, // Small overlay size
+                            displacement: [8, -8] // Offset to position in bottom-right
+                        })
+                    });
+                    styles.push(checkIconStyle);
+                }
+                
+                // Only add text style if feature is hovered
+                if (feature.get('hovered') && feature.get('textStyleConfig')) {
+                    var textConfig = feature.get('textStyleConfig');
+                    var textStyle = new ol.style.Style({
+                        text: new ol.style.Text(textConfig)
+                    });
+                    styles.push(textStyle);
+                }
+                
+                return styles;
+            });
 
             features.push(feature);
         }
@@ -444,6 +498,49 @@ class Unmined {
         var vectorLayer = new ol.layer.Vector({
             source: vectorSource
         });
+
+        // Add hover event handling
+        if (map) {
+            // Remove existing hover listener if any
+            var existingListener = vectorLayer.get('hoverListener');
+            if (existingListener) {
+                ol.Observable.unByKey(existingListener);
+            }
+
+            // Add pointermove listener for hover detection
+            var hoverListener = map.on('pointermove', function(evt) {
+                var pixel = evt.pixel;
+                var feature = map.forEachFeatureAtPixel(pixel, function(feature) {
+                    // Check if this feature belongs to this layer
+                    return vectorSource.getFeatures().indexOf(feature) !== -1 ? feature : null;
+                });
+
+                // If any marker is hovered, show all marker texts
+                if (feature) {
+                    // Set hover state for all features in this layer
+                    vectorSource.getFeatures().forEach(function(f) {
+                        if (f.get('textStyleConfig')) {
+                            f.set('hovered', true);
+                            f.changed();
+                        }
+                    });
+                    hoveredFeature = feature;
+                    map.getViewport().style.cursor = 'pointer';
+                } else if (!feature && hoveredFeature) {
+                    // No marker hovered, hide all marker texts
+                    vectorSource.getFeatures().forEach(function(f) {
+                        f.set('hovered', false);
+                        f.changed();
+                    });
+                    hoveredFeature = null;
+                    map.getViewport().style.cursor = '';
+                }
+            });
+
+            // Store listener reference on layer
+            vectorLayer.set('hoverListener', hoverListener);
+        }
+
         return vectorLayer;
     }
 
