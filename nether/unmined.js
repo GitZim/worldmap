@@ -349,6 +349,20 @@ class Unmined {
     }
 
     createMarkersLayer(markers) {
+        // Category definitions for emoji icons
+        const categories = {
+            'base': '🏠',
+            'pvp': '⚔️',
+            'structure': '🏛️',
+            'resource': '💎',
+            'danger': '⚠️',
+            'portal': '🌀',
+            'farm': '🌾',
+            'spawn': '📍',
+            'shop': '🏪',
+            'other': '📌'
+        };
+
         var features = [];
 
         for (var i = 0; i < markers.length; i++) {
@@ -360,39 +374,65 @@ class Unmined {
                 geometry: new ol.geom.Point(ol.proj.transform([longitude, latitude], this.dataProjection, this.viewProjection))
             });
 
-            var style = new ol.style.Style();
-            if (item.image)
-                style.setImage(new ol.style.Icon({
-                    src: item.image,
-                    anchor: item.imageAnchor,
-                    scale: item.imageScale
-                }));
+            var styles = [];
 
-            if (item.text) {
-                style.setText(new ol.style.Text({
-                    text: item.text,
-                    font: item.font,
-                    offsetX: item.offsetX,
-                    offsetY: item.offsetY,
-                    fill: item.textColor ? new ol.style.Fill({
-                        color: item.textColor
-                    }) : null,
-                    padding: item.textPadding ?? [2, 4, 2, 4],
-                    stroke: item.textStrokeColor ? new ol.style.Stroke({
-                        color: item.textStrokeColor,
-                        width: item.textStrokeWidth
-                    }) : null,
-                    backgroundFill: item.textBackgroundColor ? new ol.style.Fill({
-                        color: item.textBackgroundColor
-                    }) : null,
-                    backgroundStroke: item.textBackgroundStrokeColor ? new ol.style.Stroke({
-                        color: item.textBackgroundStrokeColor,
-                        width: item.textBackgroundStrokeWidth
-                    }) : null,
-                }));
+            // If category exists, use emoji as icon; otherwise use pin image
+            if (item.category && categories[item.category]) {
+                // Use emoji as icon with Text style
+                var emojiStyle = new ol.style.Style({
+                    text: new ol.style.Text({
+                        text: categories[item.category],
+                        font: '32px sans-serif',
+                        offsetY: 0,
+                        textAlign: 'center',
+                        textBaseline: 'bottom',
+                        fill: new ol.style.Fill({
+                            color: '#ffffff'
+                        })
+                    })
+                });
+                styles.push(emojiStyle);
+            } else if (item.image) {
+                // Use pin image for markers without category
+                var iconStyle = new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: item.image,
+                        anchor: item.imageAnchor,
+                        scale: item.imageScale
+                    })
+                });
+                styles.push(iconStyle);
             }
 
-            feature.setStyle(style);
+            // Add text label (positioned below icon)
+            if (item.text) {
+                var textStyle = new ol.style.Style({
+                    text: new ol.style.Text({
+                        text: item.text,
+                        font: item.font,
+                        offsetX: item.offsetX,
+                        offsetY: item.category ? 35 : item.offsetY, // Position below emoji icon if category exists
+                        fill: item.textColor ? new ol.style.Fill({
+                            color: item.textColor
+                        }) : null,
+                        padding: item.textPadding ?? [2, 4, 2, 4],
+                        stroke: item.textStrokeColor ? new ol.style.Stroke({
+                            color: item.textStrokeColor,
+                            width: item.textStrokeWidth
+                        }) : null,
+                        backgroundFill: item.textBackgroundColor ? new ol.style.Fill({
+                            color: item.textBackgroundColor
+                        }) : null,
+                        backgroundStroke: item.textBackgroundStrokeColor ? new ol.style.Stroke({
+                            color: item.textBackgroundStrokeColor,
+                            width: item.textBackgroundStrokeWidth
+                        }) : null,
+                    })
+                });
+                styles.push(textStyle);
+            }
+
+            feature.setStyle(styles);
 
             features.push(feature);
         }
