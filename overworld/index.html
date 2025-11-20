@@ -28,9 +28,18 @@
     <!-- Custom markers -->
     <script type="text/javascript" src="custom.markers.js"></script>
 
+    <!-- Marker Modal CSS -->
+    <link rel="stylesheet" type="text/css" href="marker-modal.css">
+
     <!-- uNmINeD JS and CSS -->
     <script type="text/javascript" src="unmined.js"></script>
     <link rel="stylesheet" type="text/css" href="index.css">
+
+    <!-- Marker System -->
+    <script type="text/javascript" src="../marker-config.js"></script>
+    <script type="text/javascript" src="marker-modal.js"></script>
+    <script type="text/javascript" src="marker-api.js"></script>
+    <script type="text/javascript" src="marker-integration.js"></script>
         
     </style>
 
@@ -54,6 +63,10 @@
         const mapElement = document.getElementById('map');
         const unmined = new Unmined(mapElement, UnminedMapProperties, UnminedRegions);
 
+        // Initialize marker integration
+        if (typeof initMarkerIntegration === 'function') {
+            initMarkerIntegration(unmined);
+        }
 
     </script>
 </body>

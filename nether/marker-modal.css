@@ -1,0 +1,185 @@
+/* Marker Modal Styles - Matching website theme */
+.marker-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.marker-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.marker-modal {
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+    border: 1px solid #555555;
+    border-radius: 8px;
+    padding: 1.5rem;
+    min-width: 320px;
+    max-width: 90vw;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.marker-modal-overlay.active .marker-modal {
+    transform: scale(1);
+}
+
+.marker-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #555555;
+}
+
+.marker-modal-title {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.marker-modal-close {
+    background: none;
+    border: none;
+    color: #aaaaaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.marker-modal-close:hover {
+    color: #ffffff;
+}
+
+.marker-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.marker-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.marker-modal-label {
+    color: #aaaaaa;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.marker-modal-input {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 0.6rem 0.75rem;
+    color: #cccccc;
+    font-size: 0.9rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: all 0.2s ease;
+}
+
+.marker-modal-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+    color: #ffffff;
+}
+
+.marker-modal-input::placeholder {
+    color: #666666;
+}
+
+.marker-modal-color-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.marker-modal-color-input {
+    width: 60px;
+    height: 40px;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #cccccc;
+}
+
+.marker-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #555555;
+}
+
+.marker-modal-btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.marker-modal-btn-cancel {
+    background: linear-gradient(135deg, #404040 0%, #2d2d2d 100%);
+    border-color: #555555;
+    color: #cccccc;
+}
+
+.marker-modal-btn-cancel:hover {
+    background: linear-gradient(135deg, #4a4a4a 0%, #373737 100%);
+    border-color: #666666;
+    color: #ffffff;
+}
+
+.marker-modal-btn-save {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border-color: #4CAF50;
+    color: #ffffff;
+}
+
+.marker-modal-btn-save:hover {
+    background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+}
+
+.marker-modal-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.marker-modal-loading {
+    color: #4CAF50;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0.5rem;
+}
+
