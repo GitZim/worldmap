@@ -78,34 +78,6 @@ UnminedCustomMarkers = {
 
         // add your markers here
 
-        {
-            x: 0,
-            z: 0,
-            image: "custom.pin.png",
-            imageAnchor: [0.5, 1],
-            imageScale: 0.1,
-            text: "Base",
-            textColor: "#cccccc", 
-            offsetX: 0,
-            offsetY: 20,
-            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
-        },
-
-        {
-            x: -2600,
-            z: -2200,
-            image: "custom.pin.png",
-            imageAnchor: [0.5, 1],
-            imageScale: 0.1,
-            text: "Ancient Cities",
-            textColor: "#cccccc", 
-            offsetX: 0,
-            offsetY: 20,
-            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
-        }
-
         // do not delete the following two closing brackets
     ]
 }

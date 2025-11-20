@@ -92,34 +92,6 @@ UnminedCustomMarkers = {
             textBackgroundColor: "rgba(0, 0, 0, 0.65)",
         },
 
-        {
-            x: -2,
-            z: 140,
-            image: "custom.pin.png",
-            imageAnchor: [0.5, 1],
-            imageScale: 0.1,
-            text: "End Portal",
-            textColor: "#cccccc", 
-            offsetX: 0,
-            offsetY: 20,
-            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
-        },
-
-        {
-            x: -260,
-            z: 10231,
-            image: "custom.pin.png",
-            imageAnchor: [0.5, 1],
-            imageScale: 0.1,
-            text: "80k Overworld Portals",
-            textColor: "#cccccc", 
-            offsetX: 0,
-            offsetY: 20,
-            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
-        }
-
         // do not delete the following two closing brackets
     ]
 }
