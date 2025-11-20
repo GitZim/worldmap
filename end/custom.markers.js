@@ -59,10 +59,11 @@ UnminedCustomMarkers = {
             imageAnchor: [0.5, 1],
             imageScale: 0.5,
             text: "Marker with text",
-            textColor: "red", 
+            textColor: "#cccccc", 
             offsetX: 0,
             offsetY: 20,
-            font: "bold 20px Calibri,sans serif",
+            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
         },
 
         // Example 3: Text only
@@ -70,10 +71,11 @@ UnminedCustomMarkers = {
             x: 200,
             z: 200,
             text: "Text only", 
-            textColor: "yellow", 
+            textColor: "#cccccc", 
             offsetX: 0,
             offsetY: 0, 
-            font: "bold 50px Calibri,sans serif",
+            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
         },
 
         // add your markers here

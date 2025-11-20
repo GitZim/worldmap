@@ -85,10 +85,11 @@ UnminedCustomMarkers = {
             imageAnchor: [0.5, 1],
             imageScale: 0.1,
             text: "Base",
-            textColor: "white", 
+            textColor: "#cccccc", 
             offsetX: 0,
             offsetY: 20,
-            font: "bold 20px Calibri,sans serif",
+            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
         },
 
         {
@@ -98,10 +99,11 @@ UnminedCustomMarkers = {
             imageAnchor: [0.5, 1],
             imageScale: 0.1,
             text: "Ancient Cities",
-            textColor: "white", 
+            textColor: "#cccccc", 
             offsetX: 0,
             offsetY: 20,
-            font: "bold 20px Calibri,sans serif",
+            font: "500 18px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+            textBackgroundColor: "rgba(0, 0, 0, 0.65)",
         }
 
         // do not delete the following two closing brackets
