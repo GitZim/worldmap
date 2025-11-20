@@ -40,6 +40,20 @@
         loadAndDisplayUserMarkers();
     }
 
+    // Function to find marker at given coordinates
+    function findMarkerAtCoordinates(x, z, tolerance = 10) {
+        for (let i = 0; i < userMarkers.length; i++) {
+            const marker = userMarkers[i];
+            const dx = Math.abs(marker.x - x);
+            const dz = Math.abs(marker.z - z);
+            // Check if coordinates are within tolerance (default 10 blocks)
+            if (dx <= tolerance && dz <= tolerance) {
+                return marker;
+            }
+        }
+        return null;
+    }
+
     function extendContextMenu(unmined) {
         // Get the context menu control
         const contextMenuControl = unmined.olMap.getControls().getArray().find(control => {
@@ -62,6 +76,9 @@
             coordinates[0] = Math.round(coordinates[0]);
             coordinates[1] = Math.round(coordinates[1]);
 
+            // Check if a marker exists at this location
+            const markerAtLocation = findMarkerAtCoordinates(coordinates[0], coordinates[1]);
+
             // Add "Add Custom Marker" option after the red dot marker option
             setTimeout(() => {
                 const menuItems = contextMenuControl.container.querySelectorAll('li');
@@ -74,18 +91,26 @@
                     }
                 });
 
-                // Remove existing "Add Custom Marker" if present
+                // Remove existing custom menu items if present
                 menuItems.forEach(item => {
-                    if (item.textContent.includes('Add Custom Marker')) {
+                    if (item.textContent.includes('Add Custom Marker') || 
+                        item.textContent.includes('Delete Marker') ||
+                        item.classList.contains('ol-ctx-menu-separator')) {
+                        // Check if it's our separator (one before our items)
+                        const prevSibling = item.previousElementSibling;
+                        if (prevSibling && (prevSibling.textContent.includes('Add Custom Marker') || 
+                            prevSibling.textContent.includes('Delete Marker'))) {
+                            // This is our separator, remove it too
+                        }
                         item.remove();
                     }
                 });
 
-                // Create new menu item
-                const menuItem = document.createElement('li');
-                menuItem.textContent = 'Add Custom Marker';
-                menuItem.style.cursor = 'pointer';
-                menuItem.addEventListener('click', () => {
+                // Create "Add Custom Marker" menu item
+                const addMenuItem = document.createElement('li');
+                addMenuItem.textContent = 'Add Custom Marker';
+                addMenuItem.style.cursor = 'pointer';
+                addMenuItem.addEventListener('click', () => {
                     markerModal.open(coordinates, dimension);
                     // Hide the context menu by adding the hidden class
                     if (contextMenuControl.container) {
@@ -94,16 +119,66 @@
                 });
 
                 // Insert after red dot marker option
+                let insertPoint = null;
                 if (insertAfter && insertAfter.nextSibling) {
-                    insertAfter.parentNode.insertBefore(menuItem, insertAfter.nextSibling);
+                    insertPoint = insertAfter.nextSibling;
                 } else if (insertAfter) {
-                    insertAfter.parentNode.appendChild(menuItem);
+                    insertPoint = null; // Will append
                 } else {
                     // Fallback: add at the beginning
+                    insertPoint = contextMenuControl.container.querySelector('ul').firstChild;
+                }
+
+                if (insertPoint) {
+                    insertPoint.parentNode.insertBefore(addMenuItem, insertPoint);
+                } else if (insertAfter) {
+                    insertAfter.parentNode.appendChild(addMenuItem);
+                } else {
                     contextMenuControl.container.querySelector('ul').insertBefore(
-                        menuItem,
+                        addMenuItem,
                         contextMenuControl.container.querySelector('ul').firstChild
                     );
+                }
+
+                // If marker exists at location, add delete option
+                if (markerAtLocation) {
+                    // Add separator
+                    const separator = document.createElement('li');
+                    separator.className = 'ol-ctx-menu-separator';
+                    separator.innerHTML = '<hr>';
+                    addMenuItem.parentNode.insertBefore(separator, addMenuItem.nextSibling);
+
+                    // Create "Delete Marker" menu item
+                    const deleteMenuItem = document.createElement('li');
+                    deleteMenuItem.textContent = 'Delete Marker';
+                    deleteMenuItem.style.cursor = 'pointer';
+                    deleteMenuItem.style.color = '#ff6b6b';
+                    deleteMenuItem.addEventListener('mouseenter', () => {
+                        deleteMenuItem.style.backgroundColor = '#333';
+                    });
+                    deleteMenuItem.addEventListener('mouseleave', () => {
+                        deleteMenuItem.style.backgroundColor = '';
+                    });
+                    deleteMenuItem.addEventListener('click', async () => {
+                        const markerText = markerAtLocation.text || 'this marker';
+                        if (confirm(`Are you sure you want to delete "${markerText}"?`)) {
+                            try {
+                                await markerAPI.deleteMarker(dimension, markerAtLocation.id);
+                                Unmined.toast('Marker deleted successfully');
+                                await loadAndDisplayUserMarkers();
+                            } catch (error) {
+                                console.error('Error deleting marker:', error);
+                                Unmined.toast('Failed to delete marker. Please try again.');
+                            }
+                        }
+                        // Hide the context menu
+                        if (contextMenuControl.container) {
+                            contextMenuControl.container.classList.add('ol-ctx-menu-hidden');
+                        }
+                    });
+
+                    // Insert after separator
+                    separator.parentNode.insertBefore(deleteMenuItem, separator.nextSibling);
                 }
             }, 10);
         });
