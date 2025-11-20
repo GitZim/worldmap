@@ -75,12 +75,30 @@ class MarkerAPI {
                 body: JSON.stringify(allMarkers)
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to save marker: ${response.statusText}`);
+            let responseData;
+            try {
+                responseData = await response.json();
+            } catch (parseError) {
+                console.error('Failed to parse JSONBin response:', parseError);
+                const text = await response.text();
+                console.error('Response text:', text);
+                throw new Error(`Failed to parse response: ${response.statusText}`);
             }
 
-            // Update cache
-            this.cache = allMarkers;
+            if (!response.ok) {
+                console.error('JSONBin API Error:', responseData);
+                const errorMsg = responseData?.message || response.statusText;
+                throw new Error(`Failed to save marker: ${errorMsg}`);
+            }
+
+            // Verify response structure - JSONBin v3 returns { record: {...}, metadata: {...} }
+            if (responseData.record) {
+                // Update cache with the actual response data
+                this.cache = responseData.record;
+            } else {
+                // If no record in response, use our data (shouldn't happen but fallback)
+                this.cache = allMarkers;
+            }
             this.cacheTimestamp = Date.now();
 
             return markerData;
@@ -117,12 +135,28 @@ class MarkerAPI {
                 body: JSON.stringify(allMarkers)
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to update marker: ${response.statusText}`);
+            let responseData;
+            try {
+                responseData = await response.json();
+            } catch (parseError) {
+                console.error('Failed to parse JSONBin response:', parseError);
+                const text = await response.text();
+                console.error('Response text:', text);
+                throw new Error(`Failed to parse response: ${response.statusText}`);
             }
 
-            // Update cache
-            this.cache = allMarkers;
+            if (!response.ok) {
+                console.error('JSONBin API Error:', responseData);
+                const errorMsg = responseData?.message || response.statusText;
+                throw new Error(`Failed to update marker: ${errorMsg}`);
+            }
+
+            // Update cache with response data
+            if (responseData.record) {
+                this.cache = responseData.record;
+            } else {
+                this.cache = allMarkers;
+            }
             this.cacheTimestamp = Date.now();
 
             return markerData;
@@ -154,12 +188,28 @@ class MarkerAPI {
                 body: JSON.stringify(allMarkers)
             });
 
-            if (!response.ok) {
-                throw new Error(`Failed to delete marker: ${response.statusText}`);
+            let responseData;
+            try {
+                responseData = await response.json();
+            } catch (parseError) {
+                console.error('Failed to parse JSONBin response:', parseError);
+                const text = await response.text();
+                console.error('Response text:', text);
+                throw new Error(`Failed to parse response: ${response.statusText}`);
             }
 
-            // Update cache
-            this.cache = allMarkers;
+            if (!response.ok) {
+                console.error('JSONBin API Error:', responseData);
+                const errorMsg = responseData?.message || response.statusText;
+                throw new Error(`Failed to delete marker: ${errorMsg}`);
+            }
+
+            // Update cache with response data
+            if (responseData.record) {
+                this.cache = responseData.record;
+            } else {
+                this.cache = allMarkers;
+            }
             this.cacheTimestamp = Date.now();
 
             return true;

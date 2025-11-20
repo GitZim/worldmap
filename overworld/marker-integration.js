@@ -87,7 +87,10 @@
                 menuItem.style.cursor = 'pointer';
                 menuItem.addEventListener('click', () => {
                     markerModal.open(coordinates, dimension);
-                    contextMenuControl.close();
+                    // Hide the context menu by adding the hidden class
+                    if (contextMenuControl.container) {
+                        contextMenuControl.container.classList.add('ol-ctx-menu-hidden');
+                    }
                 });
 
                 // Insert after red dot marker option
